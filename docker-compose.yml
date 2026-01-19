@@ -1,0 +1,151 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: document-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: document_management
+      MYSQL_USER: docuser
+      MYSQL_PASSWORD: docpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - document-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: document-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - document-network
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: document-rabbitmq
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      timeout: 10s
+      retries: 5
+    networks:
+      - document-network
+
+  # API Gateway (NEW - Port 8000)
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+      document-management-service:
+        condition: service_started
+      indexer-worker:
+        condition: service_started
+    networks:
+      - document-network
+
+  # Document Management Service (Internal - no longer exposed directly)
+  document-management-service:
+    build:
+      context: .
+      dockerfile: ./document-management-service/Dockerfile
+    container_name: document-management-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    volumes:
+      - document_storage:/app/document-storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - document-network
+
+  # Indexer Worker Service (Internal - no longer exposed directly)
+  indexer-worker:
+    build:
+      context: .
+      dockerfile: ./indexer-worker/Dockerfile
+    container_name: indexer-worker
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    volumes:
+      - document_storage:/app/document-storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - document-network
+
+  # Document Search Service (if needed)
+  document-search-service:
+    build:
+      context: .
+      dockerfile: ./document-search-service/Dockerfile
+    container_name: document-search-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - document-network
+
+volumes:
+  mysql_data:
+    driver: local
+  es_data:
+    driver: local
+  document_storage:
+    driver: local
+
+networks:
+  document-network:
+    driver: bridge

@@ -24,21 +24,21 @@ The application follows a microservices architecture with the following componen
 #### 1. **API Gateway** (Port 8000)
 - **Purpose**: Single entry point for all client requests
 - **Responsibilities**:
-    - JWT token validation and authentication
-    - Request routing to appropriate microservices
-    - CORS handling
-    - Rate limiting and security enforcement
+  - JWT token validation and authentication
+  - Request routing to appropriate microservices
+  - CORS handling
+  - Rate limiting and security enforcement
 - **Technology**: Spring Boot, Spring Security, JWT
 - **Endpoints**: `/api/auth/*`, `/api/health`, proxies to other services
 
 #### 2. **Document Management Service** (Port 8080)
 - **Purpose**: Handles document upload and storage
 - **Responsibilities**:
-    - Receive and validate uploaded files
-    - Store files on local filesystem with UUID naming
-    - Save document metadata to MySQL database
-    - Publish indexing messages to RabbitMQ
-    - Enforce tenant-based access control
+  - Receive and validate uploaded files
+  - Store files on local filesystem with UUID naming
+  - Save document metadata to MySQL database
+  - Publish indexing messages to RabbitMQ
+  - Enforce tenant-based access control
 - **Technology**: Spring Boot, Spring Data JPA, MySQL
 - **Storage**: Local filesystem at `/app/document-storage/`
 - **Database**: MySQL table `documents` for metadata
@@ -46,49 +46,49 @@ The application follows a microservices architecture with the following componen
 #### 3. **Document Search Service** (Port 8082)
 - **Purpose**: Provides search functionality across indexed documents
 - **Responsibilities**:
-    - Execute search queries against Elasticsearch
-    - Filter results by tenant ID
-    - Return relevance-scored results
-    - Support multi-field search (filename, content)
+  - Execute search queries against Elasticsearch
+  - Filter results by tenant ID
+  - Return relevance-scored results
+  - Support multi-field search (filename, content)
 - **Technology**: Spring Boot, Elasticsearch Java Client
 - **Index**: Elasticsearch index `documents` with mappings for full-text search
 
 #### 4. **Indexer Worker** (Port 8081)
 - **Purpose**: Asynchronously index documents for search
 - **Responsibilities**:
-    - Consume messages from RabbitMQ queue
-    - Extract text content from various file formats
-    - Index content and metadata to Elasticsearch
-    - Update document status in MySQL
-    - Handle indexing failures with retry logic
+  - Consume messages from RabbitMQ queue
+  - Extract text content from various file formats
+  - Index content and metadata to Elasticsearch
+  - Update document status in MySQL
+  - Handle indexing failures with retry logic
 - **Technology**: Spring Boot, Apache POI, Apache PDFBox, Elasticsearch
 - **Queue**: RabbitMQ queue `document.indexing.queue`
 
 #### 5. **MySQL Database** (Port 3306)
 - **Purpose**: Persistent storage for structured data
 - **Data Stored**:
-    - User accounts and credentials
-    - Document metadata (filename, file type, size, upload date)
-    - Document status (UPLOADED, INDEXING, INDEXED, FAILED)
-    - Tenant information
+  - User accounts and credentials
+  - Document metadata (filename, file type, size, upload date)
+  - Document status (UPLOADED, INDEXING, INDEXED, FAILED)
+  - Tenant information
 - **Schema**: Multiple tables with foreign key relationships
 
 #### 6. **Elasticsearch** (Port 9200)
 - **Purpose**: Full-text search engine
 - **Features**:
-    - Inverted index for fast text search
-    - Relevance scoring and ranking
-    - Multi-field search capabilities
-    - Aggregations and filtering
+  - Inverted index for fast text search
+  - Relevance scoring and ranking
+  - Multi-field search capabilities
+  - Aggregations and filtering
 - **Index Structure**: Documents indexed with fields: id, fileName, contentType, content, tenantId, uploadedAt, status
 
 #### 7. **RabbitMQ** (Port 5672, Management: 15672)
 - **Purpose**: Message broker for asynchronous processing
 - **Features**:
-    - Reliable message delivery
-    - Message persistence
-    - Dead letter queue for failed messages
-    - Work queue pattern for load distribution
+  - Reliable message delivery
+  - Message persistence
+  - Dead letter queue for failed messages
+  - Work queue pattern for load distribution
 - **Queue**: `document.indexing.queue` with durable configuration
 
 ### Data Flow
@@ -503,25 +503,25 @@ The system uses **Elasticsearch's BM25 algorithm** (Best Matching 25), which is 
 #### Key Factors in Score Calculation
 
 1. **Term Frequency (TF)**: How often the search term appears in the document
-    - Documents with more occurrences of your search terms rank higher
-    - Example: A document mentioning "invoice" 5 times scores higher than one mentioning it once
+   - Documents with more occurrences of your search terms rank higher
+   - Example: A document mentioning "invoice" 5 times scores higher than one mentioning it once
 
 2. **Inverse Document Frequency (IDF)**: How rare the term is across all documents
-    - Rare terms contribute more to the score than common terms
-    - Example: "Q4-revenue" is more valuable than common words like "report"
+   - Rare terms contribute more to the score than common terms
+   - Example: "Q4-revenue" is more valuable than common words like "report"
 
 3. **Field Length Normalization**: Shorter documents with term matches rank higher
-    - Prevents long documents from dominating results simply by having more words
-    - A 100-word document with 3 matches may score higher than a 10,000-word document with 5 matches
+   - Prevents long documents from dominating results simply by having more words
+   - A 100-word document with 3 matches may score higher than a 10,000-word document with 5 matches
 
 4. **Field Boosting**: Some fields are weighted more heavily than others
-    - **fileName**: Boosted by 2x (matches in filenames are more significant)
-    - **content**: Standard weight (matches in document body)
-    - This means finding "invoice" in the filename counts twice as much as in the content
+   - **fileName**: Boosted by 2x (matches in filenames are more significant)
+   - **content**: Standard weight (matches in document body)
+   - This means finding "invoice" in the filename counts twice as much as in the content
 
 5. **Saturation**: Diminishing returns for repeated terms
-    - BM25 prevents score inflation from excessive term repetition
-    - 10 occurrences doesn't score 10x higher than 1 occurrence
+   - BM25 prevents score inflation from excessive term repetition
+   - 10 occurrences doesn't score 10x higher than 1 occurrence
 
 ### Interpreting Score Values
 
@@ -1067,99 +1067,99 @@ echo "Bulk upload complete!"
 
 ### Docker Issues
 - **Problem**: "Cannot connect to the Docker daemon"
-    - **Solution**: Start Docker Desktop and verify with `docker info`
-    - **Verify**: Check Docker Desktop icon in menu bar shows "running"
+  - **Solution**: Start Docker Desktop and verify with `docker info`
+  - **Verify**: Check Docker Desktop icon in menu bar shows "running"
 
 - **Problem**: Services fail to start
-    - **Solution**: Check logs with `docker-compose logs <service-name>`
-    - **Solution**: Ensure ports 8000, 8080-8082, 3306, 9200, 5672, 15672 are not in use
-    - **Check ports**: `lsof -i :8000` (macOS/Linux)
+  - **Solution**: Check logs with `docker-compose logs <service-name>`
+  - **Solution**: Ensure ports 8000, 8080-8082, 3306, 9200, 5672, 15672 are not in use
+  - **Check ports**: `lsof -i :8000` (macOS/Linux)
 
 - **Problem**: Out of memory errors
-    - **Solution**: Increase Docker Desktop memory allocation to at least 4GB
-    - **Location**: Docker Desktop → Settings → Resources → Memory
+  - **Solution**: Increase Docker Desktop memory allocation to at least 4GB
+  - **Location**: Docker Desktop → Settings → Resources → Memory
 
 ### Authentication Issues
 - **Problem**: Getting 403 Forbidden
-    - **Solution**: Make sure you're using a valid JWT token from the login response
-    - **Solution**: Check that the token hasn't expired (default: 24 hours)
-    - **Debug**: Decode your JWT at https://jwt.io to check expiration
+  - **Solution**: Make sure you're using a valid JWT token from the login response
+  - **Solution**: Check that the token hasn't expired (default: 24 hours)
+  - **Debug**: Decode your JWT at https://jwt.io to check expiration
 
 - **Problem**: "Invalid username or password"
-    - **Solution**: Make sure you've signed up first, or use correct credentials
-    - **Solution**: Check for typos in username/password
+  - **Solution**: Make sure you've signed up first, or use correct credentials
+  - **Solution**: Check for typos in username/password
 
 - **Problem**: Token expired
-    - **Solution**: Login again to get a new token
-    - **Note**: Tokens are valid for 24 hours by default
+  - **Solution**: Login again to get a new token
+  - **Note**: Tokens are valid for 24 hours by default
 
 ### Upload Issues
 - **Problem**: "Document upload failed: File type not supported"
-    - **Solution**: Only PDF, DOC, DOCX, TXT, XLSX, PPT are supported
-    - **Check**: Verify file extension matches content type
+  - **Solution**: Only PDF, DOC, DOCX, TXT, XLSX, PPT are supported
+  - **Check**: Verify file extension matches content type
 
 - **Problem**: Upload returns 403
-    - **Solution**: Ensure your token is valid and the tenantId matches your user's tenantId
-    - **Debug**: Check token payload for tenantId claim
+  - **Solution**: Ensure your token is valid and the tenantId matches your user's tenantId
+  - **Debug**: Check token payload for tenantId claim
 
 - **Problem**: "curl: (26) Failed to open/read local data from file/application"
-    - **Solution**: File doesn't exist or path is incorrect
-    - **Fix**: Use full path or cd to directory containing file
-    - **Example**: `curl ... -F "file=@/full/path/to/file.txt"`
+  - **Solution**: File doesn't exist or path is incorrect
+  - **Fix**: Use full path or cd to directory containing file
+  - **Example**: `curl ... -F "file=@/full/path/to/file.txt"`
 
 - **Problem**: Large file upload fails
-    - **Solution**: Check file size limits in application.properties
-    - **Default**: 10MB max file size
-    - **Increase**: Set `spring.servlet.multipart.max-file-size=50MB`
+  - **Solution**: Check file size limits in application.properties
+  - **Default**: 10MB max file size
+  - **Increase**: Set `spring.servlet.multipart.max-file-size=50MB`
 
 ### Search Issues
 - **Problem**: "Unable to convert value to LocalDateTime"
-    - **Solution**: This is a date format issue - rebuild the services with `docker-compose up --build`
-    - **Root cause**: Elasticsearch mapping conflict
+  - **Solution**: This is a date format issue - rebuild the services with `docker-compose up --build`
+  - **Root cause**: Elasticsearch mapping conflict
 
 - **Problem**: No search results found
-    - **Solution**: Wait a few seconds after upload for indexing to complete
-    - **Solution**: Check indexer-worker logs: `docker-compose logs indexer-worker`
-    - **Debug**: Check document status in MySQL: `SELECT * FROM documents WHERE id=<doc_id>;`
-    - **Verify**: Check Elasticsearch: `curl http://localhost:9200/documents/_search?pretty`
+  - **Solution**: Wait a few seconds after upload for indexing to complete
+  - **Solution**: Check indexer-worker logs: `docker-compose logs indexer-worker`
+  - **Debug**: Check document status in MySQL: `SELECT * FROM documents WHERE id=<doc_id>;`
+  - **Verify**: Check Elasticsearch: `curl http://localhost:9200/documents/_search?pretty`
 
 - **Problem**: Search is slow
-    - **Solution**: Check Elasticsearch heap size and adjust if needed
-    - **Solution**: Verify index health: `curl http://localhost:9200/_cluster/health?pretty`
-    - **Optimize**: Reduce result size with pagination
+  - **Solution**: Check Elasticsearch heap size and adjust if needed
+  - **Solution**: Verify index health: `curl http://localhost:9200/_cluster/health?pretty`
+  - **Optimize**: Reduce result size with pagination
 
 - **Problem**: Relevance scores seem wrong
-    - **Explanation**: Elasticsearch uses TF-IDF and BM25 algorithms
-    - **Solution**: Adjust field boosting in search configuration
-    - **Note**: More unique terms get higher scores
+  - **Explanation**: Elasticsearch uses TF-IDF and BM25 algorithms
+  - **Solution**: Adjust field boosting in search configuration
+  - **Note**: More unique terms get higher scores
 
 ### Indexing Issues
 - **Problem**: Documents stuck in "UPLOADED" status
-    - **Solution**: Check RabbitMQ management UI at http://localhost:15672
-    - **Verify**: Ensure indexer-worker is running: `docker-compose ps indexer-worker`
-    - **Check**: Look for errors in indexer-worker logs
-    - **Fix**: Restart indexer-worker: `docker-compose restart indexer-worker`
+  - **Solution**: Check RabbitMQ management UI at http://localhost:15672
+  - **Verify**: Ensure indexer-worker is running: `docker-compose ps indexer-worker`
+  - **Check**: Look for errors in indexer-worker logs
+  - **Fix**: Restart indexer-worker: `docker-compose restart indexer-worker`
 
 - **Problem**: Indexing fails for specific file types
-    - **Solution**: Check indexer-worker logs for extraction errors
-    - **Common**: Corrupted files or password-protected PDFs fail extraction
-    - **Workaround**: Re-upload file or convert to supported format
+  - **Solution**: Check indexer-worker logs for extraction errors
+  - **Common**: Corrupted files or password-protected PDFs fail extraction
+  - **Workaround**: Re-upload file or convert to supported format
 
 ### General Issues
 - **Problem**: No response from endpoints
-    - **Solution**: Check if services are running: `docker-compose ps`
-    - **Solution**: Check service logs: `docker-compose logs api-gateway`
-    - **Verify**: Test with curl -v to see full request/response
+  - **Solution**: Check if services are running: `docker-compose ps`
+  - **Solution**: Check service logs: `docker-compose logs api-gateway`
+  - **Verify**: Test with curl -v to see full request/response
 
 - **Problem**: Build failures
-    - **Solution**: Clean and rebuild: `docker-compose down -v && docker-compose up --build`
-    - **Nuclear option**: Remove all Docker images and rebuild from scratch
-    - **Check**: Ensure sufficient disk space
+  - **Solution**: Clean and rebuild: `docker-compose down -v && docker-compose up --build`
+  - **Nuclear option**: Remove all Docker images and rebuild from scratch
+  - **Check**: Ensure sufficient disk space
 
 - **Problem**: Service crashes or restarts
-    - **Solution**: Check logs for OutOfMemory or other errors
-    - **Solution**: Increase Docker memory allocation
-    - **Monitor**: Use `docker stats` to monitor resource usage
+  - **Solution**: Check logs for OutOfMemory or other errors
+  - **Solution**: Increase Docker memory allocation
+  - **Monitor**: Use `docker stats` to monitor resource usage
 
 ## Viewing Logs
 
@@ -1203,10 +1203,10 @@ docker-compose logs elasticsearch | tail -50
 - **Username**: guest
 - **Password**: guest
 - **Features**:
-    - View queues and message counts
-    - Monitor message rates
-    - Manage exchanges and bindings
-    - View connection status
+  - View queues and message counts
+  - Monitor message rates
+  - Manage exchanges and bindings
+  - View connection status
 
 ### Elasticsearch Monitoring
 ```sh
