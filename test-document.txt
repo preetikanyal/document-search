@@ -1,1 +1,0 @@
-This is a test document about invoices and payments. It contains searchable content for testing the document search service.
