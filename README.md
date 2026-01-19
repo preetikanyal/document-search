@@ -208,9 +208,9 @@ Creates a new user account and returns a JWT token.
 curl -v -X POST "http://localhost:8000/api/auth/signup" \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "testuser1",
-    "password": "password123",
-    "email": "testuser1@example.com",
+    "username": "",
+    "password": "",
+    "email": "",
     "tenantId": "tenant1",
     "role": "USER"
   }'
@@ -221,7 +221,7 @@ curl -v -X POST "http://localhost:8000/api/auth/signup" \
 {
   "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInRlbmFudElkIjoidGVuYW50MSIsInN1YiI6InRlc3R1c2VyMSIsImlhdCI6MTc2ODgxMzExMywiZXhwIjoxNzY4ODk5NTEzfQ.o8Gs9h4hxy91jQwgdq4XyidElnpDLyws9psU3qNQ52M",
   "type": "Bearer",
-  "username": "testuser1",
+  "username": "",
   "tenantId": "tenant1",
   "role": "USER",
   "expiresIn": 86400000
@@ -248,8 +248,8 @@ Authenticates a user and returns a JWT token.
 curl -v -X POST "http://localhost:8000/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "testuser1",
-    "password": "password123"
+    "username": "",
+    "password": ""
   }'
 ```
 
@@ -258,7 +258,7 @@ curl -v -X POST "http://localhost:8000/api/auth/login" \
 {
   "token": "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInRlbmFudElkIjoidGVuYW50MSIsInN1YiI6InRlc3R1c2VyMSIsImlhdCI6MTc2ODgxMzExMywiZXhwIjoxNzY4ODk5NTEzfQ.o8Gs9h4hxy91jQwgdq4XyidElnpDLyws9psU3qNQ52M",
   "type": "Bearer",
-  "username": "testuser1",
+  "username": "",
   "tenantId": "tenant1",
   "role": "USER",
   "expiresIn": 86400000
